@@ -1,5 +1,6 @@
 package com.utkudogrusoz.stockcontrol.controller;
 
+import com.utkudogrusoz.stockcontrol.entity.Product;
 import com.utkudogrusoz.stockcontrol.entity.ProductEntity;
 import com.utkudogrusoz.stockcontrol.enums.FrontlineMessageCodes;
 import com.utkudogrusoz.stockcontrol.enums.LanguageEnum;
@@ -102,6 +103,35 @@ import java.util.stream.Collectors;
                 .build();
 
     }
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping(value = "/{language}/get_products_ex")
+    public InternalApiResponse<List<ProductResponse>> getAllProductsEx(@PathVariable("language") LanguageEnum languageEnum){
+        List<Product> productList=productService.getAllProductsAnotherEntity(languageEnum);
+        List<ProductResponse> productResponse = productList
+                .stream()
+                .map(arg -> new ProductResponse(
+                        arg.getId(),
+                        arg.getProductName(),
+                        arg.getQuantity(),
+                        arg.getPrice(),
+                        arg.getCreatedDate().getTime(),
+                        arg.getUpdatedDate().getTime()))
+                .collect(Collectors.toList());
+
+        return InternalApiResponse.<List<ProductResponse>>builder()
+                .frontlineMessage(FrontlineMessage.builder()
+                        .title(FrontlineMessageUtility
+                                .getFrontlineMessage(languageEnum, FrontlineMessageCodes.SUCCESS))
+                        .description(FrontlineMessageUtility
+                                .getFrontlineMessage(languageEnum, FrontlineMessageCodes.OK))
+                        .build())
+                .httpStatus(HttpStatus.OK)
+                .hasError(false)
+                .payload(productResponse)
+                .build();
+
+    }
+
 
     @ResponseStatus(HttpStatus.OK)
     @PutMapping(value = "/{language}/update/{productId}")
